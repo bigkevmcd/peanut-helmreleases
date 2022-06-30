@@ -1,0 +1,11 @@
+version: v1beta1
+name: buf.build/bigkevmcd/peanut-helmpipelines
+deps:
+  - buf.build/googleapis/googleapis
+build:
+  roots:
+    - ./api
+lint:
+  except:
+    - PACKAGE_DIRECTORY_MATCH
+    - PACKAGE_SAME_DIRECTORY

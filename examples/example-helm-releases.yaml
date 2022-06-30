@@ -1,0 +1,67 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: podinfo-production
+  namespace: default
+  labels:
+    gitops.pro/pipeline: demo-pipeline
+    gitops.pro/pipeline-environment: production
+    gitops.pro/pipeline-after: staging
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: podinfo-staging
+  namespace: default
+  labels:
+    gitops.pro/pipeline: demo-pipeline
+    gitops.pro/pipeline-environment: staging
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: HelmRepository
+metadata:
+  name: podinfo-repo
+  namespace: default
+spec:
+  interval: 5m0s
+  url: https://stefanprodan.github.io/podinfo
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  labels:
+    gitops.pro/pipeline: demo-pipeline
+    gitops.pro/pipeline-environment: staging
+  name: test-release
+  namespace: podinfo-production
+spec:
+  chart:
+    spec:
+      chart: podinfo
+      sourceRef:
+        kind: HelmRepository
+        name: podinfo-repo
+        namespace: default
+      version: 6.1.6
+  interval: 1m0s
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  labels:
+    gitops.pro/pipeline: demo-pipeline
+    gitops.pro/pipeline-after: staging
+    gitops.pro/pipeline-environment: production
+  name: test-release
+  namespace: podinfo-staging
+spec:
+  chart:
+    spec:
+      chart: podinfo
+      sourceRef:
+        kind: HelmRepository
+        name: podinfo-repo
+        namespace: default
+      version: 6.1.5
+  interval: 1m0s

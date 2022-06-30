@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: peanut-helmpipelines
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: peanut-helmpipelines
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: peanut-helmpipelines
+    spec:
+      containers:
+      - name: peanut-helmpipelines
+        image: bigkevmcd/peanut-helmpipelines:latest
+      serviceAccountName: peanut-helmpipelines
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: peanut-helmpipelines
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: peanut-helmpipelines
+  ports:
+    - protocol: TCP
+      port: 8080
