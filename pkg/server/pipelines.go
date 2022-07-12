@@ -61,10 +61,18 @@ func envsToResponseEnvironments(envs []helm.HelmReleaseEnvironment) []*pipelines
 			pe.Charts = append(pe.Charts, &pipelinesv1.Pipeline_Environment_HelmChart{
 				Name:    c.Name,
 				Version: c.Version,
-				Source:  c.Source,
+				Source:  referenceToSource(c.Source),
 			})
 		}
 		result = append(result, pe)
 	}
 	return result
+}
+
+func referenceToSource(r helmv2.CrossNamespaceObjectReference) *pipelinesv1.CrossNamespaceObjectReference {
+	return &pipelinesv1.CrossNamespaceObjectReference{
+		Kind:      r.Kind,
+		Namespace: r.Namespace,
+		Name:      r.Name,
+	}
 }

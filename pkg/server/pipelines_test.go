@@ -40,7 +40,11 @@ func TestListPipelines(t *testing.T) {
 						{
 							Name:    "redis",
 							Version: "1.0.9",
-							Source:  "HelmRepository/default/test-repository",
+							Source: &pipelinesv1.CrossNamespaceObjectReference{
+								Kind:      "HelmRepository",
+								Namespace: "default",
+								Name:      "test-repository",
+							},
 						},
 					},
 				},
@@ -51,6 +55,7 @@ func TestListPipelines(t *testing.T) {
 		cmpopts.IgnoreUnexported(timestamppb.Timestamp{}),
 		cmpopts.IgnoreUnexported(pipelinesv1.Pipeline_Environment{}),
 		cmpopts.IgnoreUnexported(pipelinesv1.Pipeline_Environment_HelmChart{}),
+		cmpopts.IgnoreUnexported(pipelinesv1.CrossNamespaceObjectReference{}),
 		cmpopts.IgnoreUnexported(pipelinesv1.Pipeline{})); diff != "" {
 		t.Fatalf("incorrect pipelines response:\n%s", diff)
 	}

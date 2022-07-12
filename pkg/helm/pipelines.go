@@ -28,7 +28,7 @@ type HelmReleaseEnvironment struct {
 type HelmReleaseChart struct {
 	Name    string
 	Version string
-	Source  string
+	Source  helmv2.CrossNamespaceObjectReference
 }
 
 // ParseHelmReleasePipelines parses the pipelines and the versions of the charts
@@ -71,7 +71,7 @@ type pipelineChart struct {
 	environment string
 	chart       string
 	version     string
-	source      string
+	source      helmv2.CrossNamespaceObjectReference
 }
 
 func parsePipelineCharts(releases []helmv2.HelmRelease) map[string][]pipelineChart {
@@ -94,16 +94,12 @@ func parsePipelineCharts(releases []helmv2.HelmRelease) map[string][]pipelineCha
 		pc = append(pc, pipelineChart{
 			pipeline: pipeline, environment: env,
 			chart: chart, version: version,
-			source: sourceToString(hr.Spec.Chart.Spec.SourceRef),
+			source: hr.Spec.Chart.Spec.SourceRef,
 		})
 		discovered[pipeline] = pc
 	}
 
 	return discovered
-}
-
-func sourceToString(s helmv2.CrossNamespaceObjectReference) string {
-	return fmt.Sprintf("%s/%s/%s", s.Kind, s.Namespace, s.Name)
 }
 
 type helmReleaseCharts map[HelmReleaseChart]sets.Empty

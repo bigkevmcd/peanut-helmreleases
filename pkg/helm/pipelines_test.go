@@ -10,6 +10,13 @@ import (
 )
 
 func TestHelmChartPipelines(t *testing.T) {
+	sourceRef := func(kind, namespace, name string) helmv2.CrossNamespaceObjectReference {
+		return helmv2.CrossNamespaceObjectReference{
+			Kind:      kind,
+			Name:      name,
+			Namespace: namespace,
+		}
+	}
 	pipelinesTests := []struct {
 		name  string
 		items []helmv2.HelmRelease
@@ -38,7 +45,7 @@ func TestHelmChartPipelines(t *testing.T) {
 								{
 									Name:    "redis",
 									Version: "1.0.9",
-									Source:  "HelmRepository/default/test-repository",
+									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
 							},
 						},
@@ -62,7 +69,7 @@ func TestHelmChartPipelines(t *testing.T) {
 								{
 									Name:    "redis",
 									Version: "1.0.9",
-									Source:  "HelmRepository/default/test-repository",
+									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
 							},
 						},
@@ -72,7 +79,7 @@ func TestHelmChartPipelines(t *testing.T) {
 								{
 									Name:    "redis",
 									Version: "1.0.9",
-									Source:  "HelmRepository/default/test-repository",
+									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
 							},
 						},
@@ -96,7 +103,7 @@ func TestHelmChartPipelines(t *testing.T) {
 								{
 									Name:    "redis",
 									Version: "1.0.9",
-									Source:  "HelmRepository/default/test-repository",
+									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
 							},
 						},
