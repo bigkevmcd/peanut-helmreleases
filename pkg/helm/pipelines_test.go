@@ -10,13 +10,6 @@ import (
 )
 
 func TestHelmChartPipelines(t *testing.T) {
-	sourceRef := func(kind, namespace, name string) helmv2.CrossNamespaceObjectReference {
-		return helmv2.CrossNamespaceObjectReference{
-			Kind:      kind,
-			Name:      name,
-			Namespace: namespace,
-		}
-	}
 	pipelinesTests := []struct {
 		name  string
 		items []helmv2.HelmRelease
@@ -128,5 +121,13 @@ func TestHelmChartPipelines(t *testing.T) {
 				t.Fatalf("failed to parse pipelines:\n%s", diff)
 			}
 		})
+	}
+}
+
+func sourceRef(kind, namespace, name string) helmv2.CrossNamespaceObjectReference {
+	return helmv2.CrossNamespaceObjectReference{
+		Kind:      kind,
+		Name:      name,
+		Namespace: namespace,
 	}
 }
