@@ -46,7 +46,7 @@ func ParseHelmReleasePipelines(hl *helmv2.HelmReleaseList) ([]HelmReleasePipelin
 	charts := parsePipelineCharts(hl.Items)
 	parsed := []HelmReleasePipeline{}
 	for _, pipeline := range ps {
-		envsToCharts := map[string]helmReleaseCharts{}
+		envsToCharts := map[string]helmReleaseChartSet{}
 		for _, c := range charts[pipeline.Name] {
 			envCharts := envsToCharts[c.environment]
 			if envCharts == nil {
@@ -55,6 +55,7 @@ func ParseHelmReleasePipelines(hl *helmv2.HelmReleaseList) ([]HelmReleasePipelin
 			envCharts.insert(HelmReleaseChart{Name: c.chart, Version: c.version, Source: c.source})
 			envsToCharts[c.environment] = envCharts
 		}
+
 		hrp := HelmReleasePipeline{Name: pipeline.Name, Environments: []HelmReleaseEnvironment{}}
 		for _, envName := range pipeline.Environments {
 			hrp.Environments = append(hrp.Environments,
@@ -102,15 +103,15 @@ func parsePipelineCharts(releases []helmv2.HelmRelease) map[string][]pipelineCha
 	return discovered
 }
 
-type helmReleaseCharts map[HelmReleaseChart]sets.Empty
+type helmReleaseChartSet map[HelmReleaseChart]sets.Empty
 
-// newHelmReleaseCharts creates and returns a new set of helmReleaseCharts.
-func newHelmReleaseCharts(items ...HelmReleaseChart) helmReleaseCharts {
-	ss := helmReleaseCharts{}
+// newHelmReleaseCharts creates and returns a new set of helmReleaseChartSet.
+func newHelmReleaseCharts(items ...HelmReleaseChart) helmReleaseChartSet {
+	ss := helmReleaseChartSet{}
 	return ss.insert(items...)
 }
 
-func (s helmReleaseCharts) insert(items ...HelmReleaseChart) helmReleaseCharts {
+func (s helmReleaseChartSet) insert(items ...HelmReleaseChart) helmReleaseChartSet {
 	for _, item := range items {
 		s[item] = sets.Empty{}
 	}
@@ -119,8 +120,8 @@ func (s helmReleaseCharts) insert(items ...HelmReleaseChart) helmReleaseCharts {
 
 // List returns the contents as a sorted slice.
 // WARNING: This is suboptimal as it's stringifying on each comparison, there
-// aren't expected to be a huge number of helmReleaseCharts.
-func (s helmReleaseCharts) List() []HelmReleaseChart {
+// aren't expected to be a huge number of helmReleaseChartSet.
+func (s helmReleaseChartSet) List() []HelmReleaseChart {
 	if len(s) == 0 {
 		return nil
 	}

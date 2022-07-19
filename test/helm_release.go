@@ -4,12 +4,12 @@ import (
 	"time"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2beta1"
-	"github.com/gitops-tools/apps-scanner/pkg/pipelines"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // NewHelmRelease creates test HelmRelease resources.
-func NewHelmRelease(opts ...func(*helmv2.HelmRelease)) helmv2.HelmRelease {
+func NewHelmRelease(opts ...func(client.Object)) helmv2.HelmRelease {
 	hr := helmv2.HelmRelease{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-release",
@@ -34,19 +34,4 @@ func NewHelmRelease(opts ...func(*helmv2.HelmRelease)) helmv2.HelmRelease {
 		o(&hr)
 	}
 	return hr
-}
-
-// InPipeline is an option for NewHelmRelease that applies the correct labels to
-// indicate that the HelmRelease is in a pipeline.
-func InPipeline(name, env, after string) func(*helmv2.HelmRelease) {
-	return func(hr *helmv2.HelmRelease) {
-		lbls := hr.GetLabels()
-		if lbls == nil {
-			lbls = map[string]string{}
-		}
-		lbls[pipelines.PipelineNameLabel] = name
-		lbls[pipelines.PipelineEnvironmentLabel] = env
-		lbls[pipelines.PipelineEnvironmentAfterLabel] = after
-		hr.SetLabels(lbls)
-	}
 }
