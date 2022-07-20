@@ -130,3 +130,5 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.13.6 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 )
+
+replace github.com/containerd/containerd => github.com/containerd/containerd v1.6.6
