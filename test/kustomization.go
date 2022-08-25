@@ -9,7 +9,7 @@ import (
 )
 
 // NewKustomization creates test Kustomization resources.
-func NewKustomization(opts ...func(client.Object)) kustomizev1.Kustomization {
+func NewKustomization(opts ...func(client.Object)) *kustomizev1.Kustomization {
 	hr := kustomizev1.Kustomization{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-kustomization",
@@ -23,7 +23,7 @@ func NewKustomization(opts ...func(client.Object)) kustomizev1.Kustomization {
 	for _, o := range opts {
 		o(&hr)
 	}
-	return hr
+	return &hr
 }
 
 // Source sets the source on a Kustomization.

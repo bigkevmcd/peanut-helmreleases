@@ -32,9 +32,7 @@ func (s *pipelinesGRPCServer) ListPipelines(ctx context.Context, in *pipelinesv1
 	if err != nil {
 		return nil, fmt.Errorf("failed to list helm releases: %w", err)
 	}
-	// fmt.Printf("found %d helm releases\n", len(helmReleaseList.Items))
-
-	helmPipelines, err := helm.ParseHelmReleasePipelines(helmReleaseList)
+	helmPipelines, err := helm.ParseHelmReleasePipelines(helmReleaseList.Items)
 	if err != nil {
 		fmt.Errorf("failed to discover pipelines: %w", err)
 	}

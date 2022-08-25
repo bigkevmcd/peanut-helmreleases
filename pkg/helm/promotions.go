@@ -1,10 +1,15 @@
 package helm
 
+import (
+	helmv2 "github.com/fluxcd/helm-controller/api/v2beta1"
+)
+
 // Promotion is a calculated upgrade for an environment.
 type Promotion struct {
-	Environment string
-	From        HelmReleaseChart
-	To          HelmReleaseChart
+	Environment      string
+	From             HelmReleaseChart
+	PromotedReleases []helmv2.CrossNamespaceObjectReference
+	To               HelmReleaseChart
 }
 
 // CalculatePromotions calculates a set of Promotions based on the differences
@@ -18,7 +23,7 @@ func CalculatePromotions(pipeline HelmReleasePipeline) []Promotion {
 	for _, pair := range pairs {
 		for _, v := range pair.toCharts {
 			if upgrade := findChart(v, pair.fromCharts); upgrade != nil {
-				promotions = append(promotions, Promotion{Environment: pair.to, From: v, To: *upgrade})
+				promotions = append(promotions, Promotion{Environment: pair.to, From: v, To: *upgrade, PromotedReleases: pair.promotedReleases[v]})
 			}
 		}
 	}
@@ -38,8 +43,9 @@ func findChart(chart HelmReleaseChart, charts []HelmReleaseChart) *HelmReleaseCh
 }
 
 type promotionPair struct {
-	from       string
-	fromCharts []HelmReleaseChart
+	from             string
+	fromCharts       []HelmReleaseChart
+	promotedReleases map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference
 
 	to       string
 	toCharts []HelmReleaseChart
@@ -49,10 +55,16 @@ func calculatePromotionPairs(p HelmReleasePipeline) []promotionPair {
 	pairs := []promotionPair{}
 	for i := range p.Environments {
 		if i < len(p.Environments)-1 {
+			promoted := map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{}
+			for _, v := range p.Environments[i+1].Charts {
+				promoted[v] = p.ChartHelmReleases[v]
+			}
 			pairs = append(pairs,
 				promotionPair{
 					from: p.Environments[i].Name, fromCharts: p.Environments[i].Charts,
-					to: p.Environments[i+1].Name, toCharts: p.Environments[i+1].Charts})
+					to: p.Environments[i+1].Name, toCharts: p.Environments[i+1].Charts,
+					promotedReleases: promoted},
+			)
 		}
 	}
 	return pairs

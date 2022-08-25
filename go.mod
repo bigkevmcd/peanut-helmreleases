@@ -4,12 +4,12 @@ go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
-	github.com/fluxcd/helm-controller/api v0.22.1
+	github.com/fluxcd/helm-controller/api v0.23.0
 	github.com/fluxcd/kustomize-controller/api v0.26.3
 	github.com/fluxcd/pkg/runtime v0.12.4
 	github.com/fluxcd/source-controller/api v0.25.9
-	github.com/gitops-tools/apps-scanner v0.0.0-20220628175408-7d4290d9ed9d
-	github.com/gitops-tools/pkg v0.0.0-20220816055313-e556a699fd13
+	github.com/gitops-tools/apps-scanner v0.0.0-20220826060851-da9ebd216ebc
+	github.com/gitops-tools/pkg v0.0.0-20220826071912-97f410fa684d
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/go-cmp v0.5.8
@@ -120,9 +120,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 	k8s.io/api v0.24.3 // indirect
-	k8s.io/apiextensions-apiserver v0.24.2 // indirect
+	k8s.io/apiextensions-apiserver v0.24.3 // indirect
 	k8s.io/cli-runtime v0.24.0 // indirect
-	k8s.io/component-base v0.24.2 // indirect
+	k8s.io/component-base v0.24.3 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect

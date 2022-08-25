@@ -3,6 +3,8 @@ package helm
 import (
 	"testing"
 
+	"github.com/fluxcd/helm-controller/api/v2beta1"
+	helmv2 "github.com/fluxcd/helm-controller/api/v2beta1"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -28,6 +30,7 @@ func TestCalculatePromotions(t *testing.T) {
 						},
 					},
 				},
+				ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{},
 			},
 			want: []Promotion{},
 		},
@@ -57,6 +60,15 @@ func TestCalculatePromotions(t *testing.T) {
 						},
 					},
 				},
+				ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+					HelmReleaseChart{
+						Name:    "redis",
+						Version: "1.0.9",
+						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					}: []helmv2.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "testing"},
+					},
+				},
 			},
 			want: []Promotion{
 				{
@@ -70,6 +82,9 @@ func TestCalculatePromotions(t *testing.T) {
 						Name:    "redis",
 						Version: "1.0.12",
 						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					},
+					PromotedReleases: []v2beta1.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "testing"},
 					},
 				},
 			},
@@ -105,6 +120,15 @@ func TestCalculatePromotions(t *testing.T) {
 						},
 					},
 				},
+				ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+					HelmReleaseChart{
+						Name:    "redis",
+						Version: "1.0.9",
+						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					}: []helmv2.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "testing"},
+					},
+				},
 			},
 			want: []Promotion{
 				{
@@ -119,6 +143,8 @@ func TestCalculatePromotions(t *testing.T) {
 						Version: "1.0.12",
 						Source:  sourceRef("HelmRepository", "default", "test-repository"),
 					},
+					PromotedReleases: []v2beta1.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "testing"}},
 				},
 			},
 		},
@@ -158,6 +184,22 @@ func TestCalculatePromotions(t *testing.T) {
 						},
 					},
 				},
+				ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+					{
+						Name:    "redis",
+						Version: "1.0.9",
+						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					}: []helmv2.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "default"},
+					},
+					{
+						Name:    "postgresql",
+						Version: "13.0.0",
+						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					}: []helmv2.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "postgres-production", Namespace: "default"},
+					},
+				},
 			},
 			want: []Promotion{
 				{
@@ -172,6 +214,9 @@ func TestCalculatePromotions(t *testing.T) {
 						Version: "1.0.12",
 						Source:  sourceRef("HelmRepository", "default", "test-repository"),
 					},
+					PromotedReleases: []v2beta1.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "default"},
+					},
 				},
 				{
 					Environment: "production",
@@ -184,6 +229,9 @@ func TestCalculatePromotions(t *testing.T) {
 						Name:    "postgresql",
 						Version: "13.0.1",
 						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					},
+					PromotedReleases: []v2beta1.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "postgres-production", Namespace: "default"},
 					},
 				},
 			},
@@ -224,6 +272,15 @@ func TestCalculatePromotions(t *testing.T) {
 						},
 					},
 				},
+				ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+					HelmReleaseChart{
+						Name:    "redis",
+						Version: "1.0.9",
+						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					}: []helmv2.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "testing"},
+					},
+				},
 			},
 			want: []Promotion{
 				{
@@ -237,6 +294,9 @@ func TestCalculatePromotions(t *testing.T) {
 						Name:    "redis",
 						Version: "1.0.12",
 						Source:  sourceRef("HelmRepository", "default", "test-repository"),
+					},
+					PromotedReleases: []v2beta1.CrossNamespaceObjectReference{
+						{Kind: "HelmRelease", Name: "redis-production", Namespace: "testing"},
 					},
 				},
 			},

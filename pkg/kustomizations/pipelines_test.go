@@ -17,25 +17,25 @@ import (
 func TestKustomizationPipelines(t *testing.T) {
 	pipelinesTests := []struct {
 		name           string
-		kustomizations []kustomizev1.Kustomization
+		kustomizations []*kustomizev1.Kustomization
 		objs           []runtime.Object
 		want           []KustomizationPipeline
 	}{
 		{
 			name:           "no kustomization",
-			kustomizations: []kustomizev1.Kustomization{},
+			kustomizations: []*kustomizev1.Kustomization{},
 			want:           []KustomizationPipeline{},
 		},
 		{
 			name: "kustomizations without pipelines",
-			kustomizations: []kustomizev1.Kustomization{
+			kustomizations: []*kustomizev1.Kustomization{
 				test.NewKustomization(test.Named("testing1", "test-ns")),
 				test.NewKustomization(test.Named("testing2", "test-ns"))},
 			want: []KustomizationPipeline{},
 		},
 		{
 			name: "single kustomization in stage",
-			kustomizations: []kustomizev1.Kustomization{
+			kustomizations: []*kustomizev1.Kustomization{
 				test.NewKustomization(test.InPipeline("demo-pipeline", "staging", ""), test.Source("test-repo", "test-ns"))},
 			objs: []runtime.Object{
 				newGitRepository("test-repo", "test-ns", "https://github.com/example/example.git", &sourcev1.GitRepositoryRef{
@@ -69,7 +69,7 @@ func TestKustomizationPipelines(t *testing.T) {
 		},
 		{
 			name: "kustomizations in two stages of the same pipeline",
-			kustomizations: []kustomizev1.Kustomization{
+			kustomizations: []*kustomizev1.Kustomization{
 				test.NewKustomization(test.InPipeline("demo-pipeline", "staging", ""), test.Source("test-repo", "test-ns")),
 				test.NewKustomization(test.Named("production-deploys", "production"),
 					test.InPipeline("demo-pipeline", "production", "staging"), test.Source("test-repo", "test-ns")),
@@ -115,7 +115,7 @@ func TestKustomizationPipelines(t *testing.T) {
 		},
 		{
 			name: "kustomizations in the same stage of the same pipeline",
-			kustomizations: []kustomizev1.Kustomization{
+			kustomizations: []*kustomizev1.Kustomization{
 				test.NewKustomization(test.InPipeline("demo-pipeline", "staging", ""),
 					test.Source("test-repo", "test-ns"),
 					test.Path("./files1"),
@@ -162,7 +162,7 @@ func TestKustomizationPipelines(t *testing.T) {
 		},
 		{
 			name: "kustomization with missing source",
-			kustomizations: []kustomizev1.Kustomization{
+			kustomizations: []*kustomizev1.Kustomization{
 				test.NewKustomization(test.InPipeline("demo-pipeline", "staging", ""), test.Source("test-repo", "test-ns"))},
 			want: []KustomizationPipeline{
 				{
@@ -190,13 +190,9 @@ func TestKustomizationPipelines(t *testing.T) {
 
 	for _, tt := range pipelinesTests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := &kustomizev1.KustomizationList{
-				Items: tt.kustomizations,
-			}
-
 			objs := []runtime.Object{}
 			for i := range tt.kustomizations {
-				objs = append(objs, &tt.kustomizations[i])
+				objs = append(objs, tt.kustomizations[i])
 			}
 			if tt.objs != nil {
 				objs = append(objs, tt.objs...)
@@ -204,7 +200,7 @@ func TestKustomizationPipelines(t *testing.T) {
 
 			cl := newFakeClient(t, objs...)
 
-			ps, err := ParseKustomizationPipelines(context.TODO(), cl, l)
+			ps, err := ParseKustomizationPipelines(context.TODO(), cl, tt.kustomizations...)
 			if err != nil {
 				t.Fatal(err)
 			}
