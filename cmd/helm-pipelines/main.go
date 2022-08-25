@@ -60,9 +60,9 @@ func listPipelines(cl client.Client) func(*cobra.Command, []string) error {
 		}
 		fmt.Printf("found %d helm releases\n", len(helmReleaseList.Items))
 
-		helmPipelines, err := helm.ParseHelmReleasePipelines(helmReleaseList)
+		helmPipelines, err := helm.ParseHelmReleasePipelines(helmReleaseList.Items)
 		if err != nil {
-			fmt.Errorf("failed to discover pipelines: %w", err)
+			return fmt.Errorf("failed to discover pipelines: %w", err)
 		}
 
 		for _, v := range helmPipelines {

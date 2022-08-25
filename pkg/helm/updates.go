@@ -3,7 +3,7 @@ package helm
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"sort"
 
@@ -83,7 +83,7 @@ func getChartIndex(ctx context.Context, chart HelmReleaseChart, c client.Client)
 		return nil, fmt.Errorf("error fetching index file: %w", err)
 	}
 
-	b, err := ioutil.ReadAll(res)
+	b, err := io.ReadAll(res)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response: %w", err)
 	}

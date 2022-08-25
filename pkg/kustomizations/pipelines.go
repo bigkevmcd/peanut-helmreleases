@@ -3,12 +3,12 @@ package kustomizations
 import (
 	"context"
 	"fmt"
-	"sort"
 
 	kustomizev1 "github.com/fluxcd/kustomize-controller/api/v1beta2"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/gitops-tools/apps-scanner/pkg/pipelines"
-	"k8s.io/apimachinery/pkg/util/sets"
+	"github.com/gitops-tools/pkg/sets"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -36,9 +36,9 @@ type EnvironmentKustomization struct {
 // ParseKustomizationPipelines parses the pipelines and the versions of the
 // GitRepository resources referenced by the Kustomizations in each stage of the
 // pipeline.
-func ParseKustomizationPipelines(ctx context.Context, cl client.Client, kl *kustomizev1.KustomizationList) ([]KustomizationPipeline, error) {
+func ParseKustomizationPipelines(ctx context.Context, cl client.Client, kusts ...*kustomizev1.Kustomization) ([]KustomizationPipeline, error) {
 	p := pipelines.NewParser()
-	if err := p.Add(kl); err != nil {
+	if err := p.Add(kustomizationsToRuntimeObjects(kusts)); err != nil {
 		return nil, fmt.Errorf("failed to parse Kustomizations: %w", err)
 	}
 	ps, err := p.Pipelines()
@@ -46,22 +46,25 @@ func ParseKustomizationPipelines(ctx context.Context, cl client.Client, kl *kust
 		return nil, fmt.Errorf("failed to calculate pipelines: %w", err)
 	}
 
-	kustomizations := parsePipelineKustomizations(kl.Items)
+	kustomizations := parsePipelineKustomizations(kusts)
 	parsed := []KustomizationPipeline{}
 	for _, pipeline := range ps {
-		envsToKustomizations := map[string]kustomizationSet{}
+		envsToKustomizations := map[string]sets.Set[EnvironmentKustomization]{}
 		for _, k := range kustomizations[pipeline.Name] {
 			envKustomizations := envsToKustomizations[k.environment]
 			if envKustomizations == nil {
-				envKustomizations = newKustomizationSet()
+				envKustomizations = sets.New[EnvironmentKustomization]()
 			}
-			envKustomizations.insert(EnvironmentKustomization{Source: k.source, Path: k.path})
+			envKustomizations.Insert(EnvironmentKustomization{Source: k.source, Path: k.path})
 			envsToKustomizations[k.environment] = envKustomizations
 		}
 
 		kp := KustomizationPipeline{Name: pipeline.Name, Environments: []KustomizationEnvironment{}}
 		for _, envName := range pipeline.Environments {
-			kustomizations := envsToKustomizations[envName].List()
+			// TODO: Come up with a better sort
+			kustomizations := envsToKustomizations[envName].SortedList(func(x, y EnvironmentKustomization) bool {
+				return x.Path < y.Path
+			})
 			for i := range kustomizations {
 				// TODO: Ignore if not GitRepository
 				k := kustomizations[i]
@@ -89,6 +92,7 @@ func loadGitRepository(ctx context.Context, cl client.Client, o client.ObjectKey
 	if err := cl.Get(ctx, o, &repo); err != nil {
 		return nil, client.IgnoreNotFound(err)
 	}
+
 	return &repo, nil
 }
 
@@ -100,7 +104,7 @@ type pipelineKustomization struct {
 }
 
 // returns a map of pipeline -> pipelineKustomization
-func parsePipelineKustomizations(kusts []kustomizev1.Kustomization) map[string][]pipelineKustomization {
+func parsePipelineKustomizations(kusts []*kustomizev1.Kustomization) map[string][]pipelineKustomization {
 	discovered := map[string][]pipelineKustomization{}
 
 	for _, k := range kusts {
@@ -128,39 +132,11 @@ func parsePipelineKustomizations(kusts []kustomizev1.Kustomization) map[string][
 	return discovered
 }
 
-type kustomizationSet map[EnvironmentKustomization]sets.Empty
-
-// newEnvironmentKustomizations creates and returns a new kustomizationSet.
-func newKustomizationSet(items ...EnvironmentKustomization) kustomizationSet {
-	ss := kustomizationSet{}
-	return ss.insert(items...)
-}
-
-func (s kustomizationSet) insert(items ...EnvironmentKustomization) kustomizationSet {
-	for _, item := range items {
-		s[item] = sets.Empty{}
-	}
-	return s
-}
-
-// List returns the contents as a sorted slice.
-// WARNING: This is suboptimal as it's stringifying on each comparison, there
-// aren't expected to be a huge number of Kustomizations.
-func (s kustomizationSet) List() []EnvironmentKustomization {
-	if len(s) == 0 {
-		return nil
-	}
-	res := []EnvironmentKustomization{}
-	for key := range s {
-		res = append(res, key)
+func kustomizationsToRuntimeObjects(kusts []*kustomizev1.Kustomization) []runtime.Object {
+	objs := make([]runtime.Object, len(kusts))
+	for i := range kusts {
+		objs[i] = kusts[i]
 	}
 
-	// TODO: Add the Reference
-	sortString := func(r EnvironmentKustomization) string {
-		return fmt.Sprintf("path=%q source=%q ref=%q", r.Path, r.Source, r.Reference)
-	}
-	sort.Slice(res, func(i, j int) bool {
-		return sortString(res[i]) < sortString(res[j])
-	})
-	return res
+	return objs
 }

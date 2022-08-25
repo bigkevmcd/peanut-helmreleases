@@ -11,6 +11,10 @@ import (
 // NewHelmRelease creates test HelmRelease resources.
 func NewHelmRelease(opts ...func(client.Object)) helmv2.HelmRelease {
 	hr := helmv2.HelmRelease{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "HelmRelease",
+			APIVersion: "source.toolkit.fluxcd.io/v1beta2",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-release",
 			Namespace: "default",
@@ -34,4 +38,13 @@ func NewHelmRelease(opts ...func(client.Object)) helmv2.HelmRelease {
 		o(&hr)
 	}
 	return hr
+}
+
+// ChartVersion sets the chart version on a HelmRelease.
+func ChartVersion(chart, version string) func(client.Object) {
+	return func(o client.Object) {
+		hr := o.(*helmv2.HelmRelease)
+		hr.Spec.Chart.Spec.Chart = chart
+		hr.Spec.Chart.Spec.Version = version
+	}
 }

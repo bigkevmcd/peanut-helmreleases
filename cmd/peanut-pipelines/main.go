@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net"
 	"os"
@@ -46,10 +45,6 @@ func makeRootCmd() *cobra.Command {
 		Use:   "peanut-pipelines",
 		Short: "Provides a gRPC API for parsing HelmReleases into pipelines",
 		Run: func(cmd *cobra.Command, args []string) {
-			ctx := context.Background()
-			ctx, cancel := context.WithCancel(ctx)
-			defer cancel()
-
 			zapLog, err := zap.NewDevelopment()
 			cobra.CheckErr(err)
 			logger := zapr.NewLogger(zapLog)
