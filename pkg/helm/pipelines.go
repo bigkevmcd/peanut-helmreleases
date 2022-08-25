@@ -2,10 +2,10 @@ package helm
 
 import (
 	"fmt"
-	"sort"
 
 	helmv2 "github.com/fluxcd/helm-controller/api/v2beta1"
-	"k8s.io/apimachinery/pkg/util/sets"
+	"github.com/gitops-tools/pkg/sets"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/gitops-tools/apps-scanner/pkg/pipelines"
 )
@@ -20,8 +20,9 @@ type HelmReleasePipeline struct {
 // HelmReleaseEnvironment represents the charts in a specific staged of a
 // pipeline.
 type HelmReleaseEnvironment struct {
-	Name   string
-	Charts []HelmReleaseChart
+	Name              string
+	Charts            []HelmReleaseChart
+	ChartHelmReleases map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference
 }
 
 // HelmReleaseChart is the specific version of the chart in a HelmRelease.
@@ -45,26 +46,45 @@ func ParseHelmReleasePipelines(hl *helmv2.HelmReleaseList) ([]HelmReleasePipelin
 
 	charts := parsePipelineCharts(hl.Items)
 	parsed := []HelmReleasePipeline{}
+	chartHelmReleases := map[HelmReleaseChart]sets.Set[helmv2.CrossNamespaceObjectReference]{}
 	for _, pipeline := range ps {
-		envsToCharts := map[string]helmReleaseChartSet{}
+		envsToCharts := map[string]sets.Set[HelmReleaseChart]{}
 		for _, c := range charts[pipeline.Name] {
 			envCharts := envsToCharts[c.environment]
+			hrc := HelmReleaseChart{Name: c.chart, Version: c.version, Source: c.source}
 			if envCharts == nil {
-				envCharts = newHelmReleaseCharts()
+				envCharts = sets.New[HelmReleaseChart]()
 			}
-			envCharts.insert(HelmReleaseChart{Name: c.chart, Version: c.version, Source: c.source})
+			helmReleases := chartHelmReleases[hrc]
+			if helmReleases == nil {
+				helmReleases = sets.New[helmv2.CrossNamespaceObjectReference]()
+			}
+			envCharts.Insert(hrc)
+			helmReleases.Insert(c.helmRelease)
 			envsToCharts[c.environment] = envCharts
+			chartHelmReleases[hrc] = helmReleases
 		}
 
 		hrp := HelmReleasePipeline{Name: pipeline.Name, Environments: []HelmReleaseEnvironment{}}
 		for _, envName := range pipeline.Environments {
 			hrp.Environments = append(hrp.Environments,
-				HelmReleaseEnvironment{Name: envName, Charts: envsToCharts[envName].List()})
+				HelmReleaseEnvironment{Name: envName,
+					Charts:            envsToCharts[envName].List(),
+					ChartHelmReleases: unpackChartReleases(chartHelmReleases),
+				})
 		}
 		parsed = append(parsed, hrp)
 	}
 
 	return parsed, nil
+}
+
+func unpackChartReleases(packed map[HelmReleaseChart]sets.Set[helmv2.CrossNamespaceObjectReference]) map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference {
+	unpacked := map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{}
+	for k, v := range packed {
+		unpacked[k] = v.List()
+	}
+	return unpacked
 }
 
 type pipelineChart struct {
@@ -73,6 +93,7 @@ type pipelineChart struct {
 	chart       string
 	version     string
 	source      helmv2.CrossNamespaceObjectReference
+	helmRelease helmv2.CrossNamespaceObjectReference
 }
 
 func parsePipelineCharts(releases []helmv2.HelmRelease) map[string][]pipelineChart {
@@ -95,7 +116,8 @@ func parsePipelineCharts(releases []helmv2.HelmRelease) map[string][]pipelineCha
 		pc = append(pc, pipelineChart{
 			pipeline: pipeline, environment: env,
 			chart: chart, version: version,
-			source: hr.Spec.Chart.Spec.SourceRef,
+			source:      hr.Spec.Chart.Spec.SourceRef,
+			helmRelease: objectReferenceFromObject(&hr),
 		})
 		discovered[pipeline] = pc
 	}
@@ -103,37 +125,12 @@ func parsePipelineCharts(releases []helmv2.HelmRelease) map[string][]pipelineCha
 	return discovered
 }
 
-type helmReleaseChartSet map[HelmReleaseChart]sets.Empty
-
-// newHelmReleaseCharts creates and returns a new set of helmReleaseChartSet.
-func newHelmReleaseCharts(items ...HelmReleaseChart) helmReleaseChartSet {
-	ss := helmReleaseChartSet{}
-	return ss.insert(items...)
-}
-
-func (s helmReleaseChartSet) insert(items ...HelmReleaseChart) helmReleaseChartSet {
-	for _, item := range items {
-		s[item] = sets.Empty{}
+func objectReferenceFromObject(obj client.Object) helmv2.CrossNamespaceObjectReference {
+	apiVersion, kind := obj.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+	return helmv2.CrossNamespaceObjectReference{
+		APIVersion: apiVersion,
+		Kind:       kind,
+		Name:       obj.GetName(),
+		Namespace:  obj.GetNamespace(),
 	}
-	return s
-}
-
-// List returns the contents as a sorted slice.
-// WARNING: This is suboptimal as it's stringifying on each comparison, there
-// aren't expected to be a huge number of helmReleaseChartSet.
-func (s helmReleaseChartSet) List() []HelmReleaseChart {
-	if len(s) == 0 {
-		return nil
-	}
-	res := []HelmReleaseChart{}
-	for key := range s {
-		res = append(res, key)
-	}
-	sortString := func(r HelmReleaseChart) string {
-		return fmt.Sprintf("name=%q version=%q source=%q", r.Name, r.Version, r.Source)
-	}
-	sort.Slice(res, func(i, j int) bool {
-		return sortString(res[i]) < sortString(res[j])
-	})
-	return res
 }

@@ -9,6 +9,7 @@ require (
 	github.com/fluxcd/pkg/runtime v0.12.4
 	github.com/fluxcd/source-controller/api v0.25.9
 	github.com/gitops-tools/apps-scanner v0.0.0-20220628175408-7d4290d9ed9d
+	github.com/gitops-tools/pkg v0.0.0-20220816055313-e556a699fd13
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/google/go-cmp v0.5.8
@@ -21,9 +22,9 @@ require (
 	google.golang.org/grpc v1.47.0
 	google.golang.org/protobuf v1.28.0
 	helm.sh/helm/v3 v3.9.0
-	k8s.io/apimachinery v0.24.1
-	k8s.io/client-go v0.24.1
-	sigs.k8s.io/controller-runtime v0.12.1
+	k8s.io/apimachinery v0.24.3
+	k8s.io/client-go v0.24.3
+	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -118,10 +119,10 @@ require (
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
-	k8s.io/api v0.24.1 // indirect
-	k8s.io/apiextensions-apiserver v0.24.1 // indirect
+	k8s.io/api v0.24.3 // indirect
+	k8s.io/apiextensions-apiserver v0.24.2 // indirect
 	k8s.io/cli-runtime v0.24.0 // indirect
-	k8s.io/component-base v0.24.1 // indirect
+	k8s.io/component-base v0.24.2 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect

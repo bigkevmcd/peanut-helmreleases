@@ -41,6 +41,9 @@ func TestHelmChartPipelines(t *testing.T) {
 									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
 							},
+							ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+								{Name: "redis", Version: "1.0.9", Source: helmv2.CrossNamespaceObjectReference{Kind: "HelmRepository", Name: "test-repository", Namespace: "default"}}: {{Name: "test-release", Namespace: "default"}},
+							},
 						},
 					},
 				},
@@ -65,6 +68,9 @@ func TestHelmChartPipelines(t *testing.T) {
 									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
 							},
+							ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+								{Name: "redis", Version: "1.0.9", Source: helmv2.CrossNamespaceObjectReference{Kind: "HelmRepository", Name: "test-repository", Namespace: "default"}}: {{Name: "test-release", Namespace: "default"}},
+							},
 						},
 						{
 							Name: "production",
@@ -74,6 +80,9 @@ func TestHelmChartPipelines(t *testing.T) {
 									Version: "1.0.9",
 									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
+							},
+							ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+								{Name: "redis", Version: "1.0.9", Source: helmv2.CrossNamespaceObjectReference{Kind: "HelmRepository", Name: "test-repository", Namespace: "default"}}: {{Name: "test-release", Namespace: "default"}},
 							},
 						},
 					},
@@ -98,6 +107,9 @@ func TestHelmChartPipelines(t *testing.T) {
 									Version: "1.0.9",
 									Source:  sourceRef("HelmRepository", "default", "test-repository"),
 								},
+							},
+							ChartHelmReleases: map[HelmReleaseChart][]helmv2.CrossNamespaceObjectReference{
+								{Name: "redis", Version: "1.0.9", Source: helmv2.CrossNamespaceObjectReference{Kind: "HelmRepository", Name: "test-repository", Namespace: "default"}}: []helmv2.CrossNamespaceObjectReference{{Name: "test-release", Namespace: "default"}},
 							},
 						},
 					},
