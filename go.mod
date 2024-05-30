@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
-	github.com/fluxcd/helm-controller/api v0.23.0
+	github.com/fluxcd/helm-controller/api v0.26.0
 	github.com/fluxcd/kustomize-controller/api v0.26.3
 	github.com/fluxcd/pkg/runtime v0.12.4
 	github.com/fluxcd/source-controller/api v0.30.0
@@ -46,8 +46,8 @@ require (
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.1.0 // indirect
-	github.com/fluxcd/pkg/apis/kustomize v0.4.2 // indirect
-	github.com/fluxcd/pkg/apis/meta v0.16.0 // indirect
+	github.com/fluxcd/pkg/apis/kustomize v0.6.0 // indirect
+	github.com/fluxcd/pkg/apis/meta v0.17.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
