@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/fluxcd/helm-controller/api v0.26.0
-	github.com/fluxcd/kustomize-controller/api v0.26.3
+	github.com/fluxcd/kustomize-controller/api v0.30.0
 	github.com/fluxcd/pkg/runtime v0.12.4
 	github.com/fluxcd/source-controller/api v0.30.0
 	github.com/gitops-tools/apps-scanner v0.0.0-20220826060851-da9ebd216ebc
