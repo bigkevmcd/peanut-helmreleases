@@ -1,6 +1,8 @@
 module github.com/bigkevmcd/peanut-helmpipelines
 
-go 1.18
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
 	github.com/Masterminds/semver v1.5.0
